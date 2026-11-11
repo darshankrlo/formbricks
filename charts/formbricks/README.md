@@ -889,6 +889,28 @@ Upgrading from a chart that did not render the web container context:
   Keep the migration Job enabled so startup migrations are skipped, or set
   `deployment.containerSecurityContext.readOnlyRootFilesystem: false` for startup migrations on an older image.
 
+## Hub and migration container security contexts
+
+Hub and the Node-based migration containers have their own container security contexts, separate from
+`deployment.containerSecurityContext` (web). Each defaults to restricted-compatible settings and can be
+overridden independently.
+
+| Value | Applies to | Default |
+|---|---|---|
+| `hub.containerSecurityContext` | `hub`, `hub-migrate` (API Deployment and Hub migration Job), `hub-worker`, `wait-for-hub-api` | Read-only root filesystem, `runAsNonRoot`, `runAsUser: 1000`, no privilege escalation, all capabilities dropped, `RuntimeDefault` seccomp |
+| `migration.containerSecurityContext` | Migration Job (`wait-for-database`, `migration`) and the Hub Deployment's `wait-for-formbricks-migration` init container | `runAsNonRoot`, `runAsUser: 1001`, no privilege escalation, all capabilities dropped, `RuntimeDefault` seccomp |
+
+Notes:
+
+- Hub images run as UID 1000 and the Formbricks image as UID 1001. The two values do not affect each other or
+  the web container. A custom image with a different UID needs `runAsUser` set in the matching value.
+- `migration.containerSecurityContext` does not set `readOnlyRootFilesystem`, so the migration Job keeps a
+  writable root and still works with older migration images. The `restricted` Pod Security standard does not
+  require a read-only root.
+- Values merge over the defaults. Set a field to `null` to remove it, for example
+  `hub.containerSecurityContext.seccompProfile=null`. Setting `capabilities.drop[0]` replaces the dropped list.
+- Pod-level contexts (`deployment.securityContext` and the Hub migration Job's pod-level `runAsUser: 1000`) are unchanged.
+
 ## Values
 
 | Key                                                                | Type   | Default                                                                     | Description                                               |
@@ -985,6 +1007,12 @@ Upgrading from a chart that did not render the web container context:
 | hub.autoscaling.enabled                                            | bool   | `false`                                                                     |                                                           |
 | hub.autoscaling.maxReplicas                                        | int    | `3`                                                                         |                                                           |
 | hub.autoscaling.minReplicas                                        | int    | `1`                                                                         |                                                           |
+| hub.containerSecurityContext.allowPrivilegeEscalation              | bool   | `false`                                                                     |                                                           |
+| hub.containerSecurityContext.capabilities.drop[0]                  | string | `"ALL"`                                                                     |                                                           |
+| hub.containerSecurityContext.readOnlyRootFilesystem                | bool   | `true`                                                                      |                                                           |
+| hub.containerSecurityContext.runAsNonRoot                          | bool   | `true`                                                                      |                                                           |
+| hub.containerSecurityContext.runAsUser                             | int    | `1000`                                                                      | Hub API, worker and migration containers.                 |
+| hub.containerSecurityContext.seccompProfile.type                   | string | `"RuntimeDefault"`                                                          |                                                           |
 | hub.enabled                                                        | bool   | `true`                                                                      |                                                           |
 | hub.embeddings.auth.enabled                                        | bool   | `true`                                                                      |                                                           |
 | hub.embeddings.auth.existingSecret                                 | string | `""`                                                                        |                                                           |
@@ -1100,6 +1128,11 @@ Upgrading from a chart that did not render the web container context:
 | llm.servingEngineSpec.strategy.type                                | string | `"Recreate"`                                                                | Avoids requiring a second GPU during model pod upgrades.  |
 | migration.annotations                                              | object | `{}`                                                                        |                                                           |
 | migration.backoffLimit                                             | int    | `3`                                                                         |                                                           |
+| migration.containerSecurityContext.allowPrivilegeEscalation        | bool   | `false`                                                                     |                                                           |
+| migration.containerSecurityContext.capabilities.drop[0]            | string | `"ALL"`                                                                     |                                                           |
+| migration.containerSecurityContext.runAsNonRoot                    | bool   | `true`                                                                      |                                                           |
+| migration.containerSecurityContext.runAsUser                       | int    | `1001`                                                                      | Node migration containers; no readOnlyRootFilesystem.     |
+| migration.containerSecurityContext.seccompProfile.type             | string | `"RuntimeDefault"`                                                          |                                                           |
 | migration.enabled                                                  | bool   | `true`                                                                      |                                                           |
 | migration.resources.limits.memory                                  | string | `"512Mi"`                                                                   |                                                           |
 | migration.resources.requests.cpu                                   | string | `"100m"`                                                                    |                                                           |
