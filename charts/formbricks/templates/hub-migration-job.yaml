@@ -60,10 +60,10 @@ spec:
         - name: hub-migrate
           image: {{ include "formbricks.hubImage" . }}
           imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
+          {{- with .Values.hub.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
-            capabilities:
-              drop: ["ALL"]
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - sh
             - -c
