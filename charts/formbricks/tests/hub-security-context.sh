@@ -73,3 +73,7 @@ check_overrides hub-deployment.yaml 2
 # Hub worker Deployment: wait-for-hub-api init container + hub-worker container.
 check_defaults hub-worker-deployment.yaml 2
 check_overrides hub-worker-deployment.yaml 2
+
+# Hub migration Job: hub-migrate container.
+check_defaults hub-migration-job.yaml 1
+check_overrides hub-migration-job.yaml 1
