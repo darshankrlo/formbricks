@@ -21,7 +21,7 @@ fail() {
 }
 
 expect_writable_job() {
-  if grep -qE '^          securityContext:|^ +(volumes|volumeMounts):$' <<<"$1"; then
+  if grep -qE '^            readOnlyRootFilesystem: true|^ +(volumes|volumeMounts):$' <<<"$1"; then
     fail "Migration containers must not inherit the web security context or staging mounts"
   fi
   grep -q 'packages/database/dist/scripts/apply-migrations.js' <<<"$1" \

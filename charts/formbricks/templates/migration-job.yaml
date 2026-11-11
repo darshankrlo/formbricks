@@ -51,6 +51,10 @@ spec:
         - name: wait-for-database
           image: {{ include "formbricks.deploymentImage" . }}
           imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          {{- with .Values.migration.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - node
             - packages/database/dist/scripts/wait-for-database.js
@@ -71,6 +75,10 @@ spec:
         - name: migration
           image: {{ include "formbricks.deploymentImage" . }}
           imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
+          {{- with .Values.migration.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - node
             - packages/database/dist/scripts/apply-migrations.js
