@@ -91,6 +91,7 @@ jobs:
           bash charts/formbricks/tests/taxonomy-security-context.sh
           bash charts/formbricks/tests/web-security-context.sh
           bash charts/formbricks/tests/migration-security-context.sh
+          bash charts/formbricks/tests/hub-security-context.sh
           bash charts/formbricks/tests/hub-migration-wait.sh
 
           helm template qa "$chart" \

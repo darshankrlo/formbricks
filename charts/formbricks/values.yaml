@@ -1229,6 +1229,20 @@ hub:
   extraVolumes: []
   extraVolumeMounts: []
 
+  # Container security context applied to all Hub containers (API, hub-migrate, hub-worker and its
+  # wait-for-api init container). Defaults satisfy the restricted Pod Security Standard. Hub images
+  # run as UID 1000; this is separate from the Node-based Formbricks containers (UID 1001).
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
   # Optional env vars (non-secret). Use existingSecret for secret values such as DATABASE_URL and HUB_API_KEY.
   # Applied to both the Hub API and hub-worker (the worker merges hub.env), so providers set here also
   # reach the classify jobs. To enable sentiment/emotion/translation enrichment (Hub >= 0.7.1), set the

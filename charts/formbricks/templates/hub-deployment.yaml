@@ -383,10 +383,10 @@ spec:
         - name: hub-migrate
           image: {{ include "formbricks.hubImage" . }}
           imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
+          {{- with .Values.hub.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - sh
             - -c
@@ -400,10 +400,10 @@ spec:
         - name: hub
           image: {{ include "formbricks.hubImage" . }}
           imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
+          {{- with .Values.hub.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 8080
