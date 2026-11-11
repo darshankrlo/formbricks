@@ -63,6 +63,21 @@ migration:
     intervalSeconds: 5
     connectionTimeoutSeconds: 5
 
+  # Container security context for the Node-based migration containers: the migration Job
+  # (wait-for-database, migration) and the wait-for-formbricks-migration init container of the Hub
+  # Deployment. Defaults satisfy the restricted Pod Security Standard and use the Formbricks image UID
+  # (1001), separate from the Hub UID 1000 in hub.containerSecurityContext. readOnlyRootFilesystem is
+  # intentionally not set so older migration images that need a writable root keep working.
+  containerSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
+
   # Resource requests and limits for the migration job
   resources:
     limits:
