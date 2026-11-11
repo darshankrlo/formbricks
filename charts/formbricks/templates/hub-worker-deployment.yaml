@@ -51,10 +51,10 @@ spec:
         - name: wait-for-hub-api
           image: {{ include "formbricks.hubImage" . }}
           imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
+          {{- with .Values.hub.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command:
             - sh
             - -c
@@ -77,10 +77,10 @@ spec:
           imagePullPolicy: {{ .Values.hub.image.pullPolicy }}
           command:
             - /app/hub-worker
+          {{- with .Values.hub.containerSecurityContext }}
           securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 1000
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           envFrom:
             - secretRef:
                 name: {{ include "formbricks.hubSecretName" . }}
